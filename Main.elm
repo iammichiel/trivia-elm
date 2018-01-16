@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, a, button, div, h1, h2, li, p, span, text, ul)
+import Html exposing (Html, a, br, button, div, h1, h2, li, p, span, text, ul)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Navigation exposing (Location, program)
@@ -177,7 +177,7 @@ update msg model =
                     in
                         case game.questions of
                             [] ->
-                                ( { model | game = Loaded (Game game.currentQuestion game.questions answeredQuestions) }, redirectToResult game )
+                                ( { model | game = Loaded (Game game.currentQuestion game.questions answeredQuestions) }, redirectToResult answeredQuestions )
 
                             firstRemaining :: others ->
                                 ( { model | game = Loaded (Game firstRemaining others answeredQuestions) }, Cmd.none )
@@ -186,9 +186,9 @@ update msg model =
                     ( model, Cmd.none )
 
 
-redirectToResult : Game -> Cmd Msg
-redirectToResult game =
-    game.answeredQuestions
+redirectToResult : List AnsweredQuestion -> Cmd Msg
+redirectToResult answeredQuestions =
+    answeredQuestions
         |> List.map
             (\answeredQuestion ->
                 if answeredQuestion.result == Correct then
@@ -273,9 +273,9 @@ displayPage : Model -> Html Msg
 displayPage model =
     case model.route of
         HomeRoute ->
-            div []
+            div [ class "gameOptions" ]
                 [ h1 [] [ text "Quiz Game" ]
-                , a [ class "btn btn-primary mr-3", href "#game" ] [ text "Play random questions" ]
+                , a [ class "btn btn-primary", href "#game" ] [ text "Play random questions" ]
                 , a [ class "btn btn-primary", href "#categories" ] [ text "Play from a category" ]
                 ]
 
@@ -289,10 +289,15 @@ displayPage model =
                 ]
 
         ResultRoute score ->
-            div [ class "score" ]
-                [ p [] [ text ("Your score: " ++ (toString score) ++ " / 5") ]
-                , a [ class "btn btn-primary", href "#" ] [ text "Replay" ]
-                ]
+            scorePage score
+
+
+scorePage : Int -> Html Msg
+scorePage score =
+    div [ class "score" ]
+        [ h1 [] [ text ("Your score: " ++ (toString score) ++ " / 5") ]
+        , a [ class "btn btn-primary", href "#" ] [ text "Replay" ]
+        ]
 
 
 categoriesPage : RemoteData (List Category) -> Html Msg
